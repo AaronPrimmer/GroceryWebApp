@@ -51,6 +51,7 @@ namespace WebApp.Controllers
             return View(category);
         }
 
+        [HttpPost]
         public IActionResult Delete(int categoryId)
         {
             CategoriesRepository.DeleteCategory(categoryId);

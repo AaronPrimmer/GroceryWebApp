@@ -62,9 +62,10 @@ namespace WebApp.Controllers
             return View(productViewModel);
         }
 
-        public IActionResult Delete(int categoryId)
+        [HttpPost]
+        public IActionResult Delete(int productId)
         {
-            ProductRepository.DeleteProduct(categoryId);
+            ProductRepository.DeleteProduct(productId);
             return RedirectToAction(nameof(Index));
         } 
         
