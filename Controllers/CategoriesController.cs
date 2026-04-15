@@ -52,6 +52,7 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Delete(int categoryId)
         {
             CategoriesRepository.DeleteCategory(categoryId);

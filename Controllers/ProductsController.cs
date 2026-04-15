@@ -63,6 +63,7 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Delete(int productId)
         {
             ProductRepository.DeleteProduct(productId);
