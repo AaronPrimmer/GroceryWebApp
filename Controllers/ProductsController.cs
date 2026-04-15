@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebApp.Data;
 using WebApp.Models;
 using WebApp.ViewModels;
 
@@ -6,34 +8,45 @@ namespace WebApp.Controllers
 {
     public class ProductsController : Controller
     {
-        public IActionResult Index()
+        private readonly AppDbContext _db;
+
+        public ProductsController(AppDbContext db)
         {
-            var products = ProductRepository.GetProducts(true);
+            _db = db;
+        }
+        public async Task<IActionResult> Index()
+        {
+            var products = await _db.SupermarketProductsTbl.ToListAsync();
+            //var products = ProductRepository.GetProducts(true);
             return View(products);
         }
 
-        public IActionResult Add()
+        public async Task<IActionResult> Add()
         {
             ViewBag.Action = "add";
             var productViewModel = new ProductViewModel
             {
-                Categories = CategoriesRepository.GetAllCategories()
+                Categories = await _db.SupermarketCategoriesTbl.ToListAsync()
+                //Categories = CategoriesRepository.GetAllCategories()
             };
 
             return View(productViewModel);
         }
 
         [HttpPost]
-        public IActionResult Add(ProductViewModel productViewModel)
+        public async Task<IActionResult> Add(ProductViewModel productViewModel)
         {
             if (ModelState.IsValid)
             {
-                ProductRepository.AddProduct(productViewModel.Product);
+                var productAdd = await _db.SupermarketProductsTbl.AddAsync(productViewModel.Product);
+                await _db.SaveChangesAsync();
+                //ProductRepository.AddProduct(productViewModel.Product);
                 return RedirectToAction("Index");
             }
 
             ViewBag.Action = "add";
-            productViewModel.Categories = CategoriesRepository.GetAllCategories();
+            productViewModel.Categories = await _db.SupermarketCategoriesTbl.ToListAsync();
+            //productViewModel.Categories = CategoriesRepository.GetAllCategories();
             return View(productViewModel);
         }
 

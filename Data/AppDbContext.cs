@@ -10,5 +10,7 @@ namespace WebApp.Data
         }
 
         public DbSet<Category> SupermarketCategoriesTbl { get; set; }
+
+        public DbSet<Product> SupermarketProductsTbl { get; set; }
     }
 }

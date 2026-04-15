@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Reflection.Metadata.Ecma335;
 using WebApp.Data;
 using WebApp.Models;
 using WebApp.Settings;
@@ -22,19 +23,24 @@ namespace WebApp.Controllers
             return View(categories);
         }
 
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             ViewBag.Action = "edit";
-            var category = CategoriesRepository.GetCategoryById(id.HasValue ? id.Value : 0);
+            var category = await _db.SupermarketCategoriesTbl.FirstOrDefaultAsync(c => c.CategoryId == (id.HasValue ? id.Value : 0));
+            //var category = CategoriesRepository.GetCategoryById(id.HasValue ? id.Value : 0);
             return View(category);
         }
 
         [HttpPost]
-        public IActionResult Edit(Category category)
+        public async Task<IActionResult> Edit(Category category)
         {
             if (ModelState.IsValid)
             {
-                CategoriesRepository.UpdateCategory(category.CategoryId, category);
+                var categoryUpdate = await _db.SupermarketCategoriesTbl.SingleAsync(c => c.CategoryId == category.CategoryId);
+                categoryUpdate.Name = category.Name;
+                categoryUpdate.Description = category.Description;
+                await _db.SaveChangesAsync();
+                //CategoriesRepository.UpdateCategory(category.CategoryId, category);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -65,9 +71,15 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int categoryId)
+        public async Task<IActionResult> Delete(int categoryId)
         {
-            CategoriesRepository.DeleteCategory(categoryId);
+            var categoryToDelete = await _db.SupermarketCategoriesTbl.FirstOrDefaultAsync(c => c.CategoryId == categoryId);
+            if (categoryToDelete != null) 
+            {
+                _db.SupermarketCategoriesTbl.Remove(categoryToDelete);
+                await _db.SaveChangesAsync();
+            }
+            //CategoriesRepository.DeleteCategory(categoryId);
             return RedirectToAction(nameof(Index));
         }
     }
