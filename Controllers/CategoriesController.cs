@@ -26,6 +26,8 @@ namespace WebApp.Controllers
                 CategoriesRepository.UpdateCategory(category.CategoryId, category);
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewBag.Action = "edit";
             return View(category);
         }
 
@@ -38,11 +40,14 @@ namespace WebApp.Controllers
         [HttpPost]
         public IActionResult Add(Category category)
         {
+            
             if (ModelState.IsValid) 
             {
                 CategoriesRepository.AddCategory(category);
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewBag.Action = "add";
             return View(category);
         }
 
