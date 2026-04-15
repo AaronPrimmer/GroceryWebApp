@@ -28,6 +28,7 @@ namespace WebApp.Models
         [Range(0, int.MaxValue)]
         public double Price { get; set; }
 
+        [ForeignKey("CategoryId")]
         public Category? Category { get; set; }
     }
 }

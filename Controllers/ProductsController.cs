@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using WebApp.Data;
 using WebApp.Models;
 using WebApp.ViewModels;
@@ -16,7 +17,7 @@ namespace WebApp.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            var products = await _db.SupermarketProductsTbl.ToListAsync();
+            var products = await _db.SupermarketProductsTbl.Include(p => p.Category).ToListAsync();
             //var products = ProductRepository.GetProducts(true);
             return View(products);
         }
@@ -50,28 +51,41 @@ namespace WebApp.Controllers
             return View(productViewModel);
         }
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
             ViewBag.Action = "edit";
+            var allInfo = await _db.SupermarketProductsTbl.Include(p => p.Category).FirstOrDefaultAsync(p => p.ProductId == id);
+
             var productViewModel = new ProductViewModel
             {
-                Product = ProductRepository.GetProductById(id) ?? new Product(),
-                Categories = CategoriesRepository.GetAllCategories()
+                Product = allInfo != null ? new Product() { ProductId = allInfo.ProductId, Name = allInfo.Name, Price = allInfo.Price, Quantity = allInfo.Quantity, CategoryId = allInfo.CategoryId } : new Product(),
+                //Product = ProductRepository.GetProductById(id) ?? new Product(),
+                Categories = await _db.SupermarketCategoriesTbl.ToListAsync()
             };
+            
             return View(productViewModel);
         }
 
         [HttpPost]
-        public IActionResult Edit(ProductViewModel productViewModel)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ProductViewModel productViewModel)
         {
             if (ModelState.IsValid)
             {
-                ProductRepository.UpdateProduct(productViewModel.Product.ProductId, productViewModel.Product);
+                var productToUpdate = await _db.SupermarketProductsTbl.FirstOrDefaultAsync(p => p.ProductId == productViewModel.Product.ProductId);
+                if (productToUpdate != null)
+                {
+                    productToUpdate.Name = productViewModel.Product.Name;
+                    productToUpdate.Price = productViewModel.Product.Price;
+                    productToUpdate.Quantity = productViewModel.Product.Quantity;
+                    productToUpdate.CategoryId = productViewModel.Product.CategoryId;
+                    await _db.SaveChangesAsync();
+                }
                 return RedirectToAction("Index");
             }
 
             ViewBag.Action = "edit";
-            productViewModel.Categories = CategoriesRepository.GetAllCategories();
+            productViewModel.Categories = await _db.SupermarketCategoriesTbl.ToListAsync();
             return View(productViewModel);
         }
 
@@ -79,7 +93,13 @@ namespace WebApp.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Delete(int productId)
         {
-            ProductRepository.DeleteProduct(productId);
+            var productToDelete = _db.SupermarketProductsTbl.Find(productId);
+            if (productToDelete != null) 
+            {
+                _db.SupermarketProductsTbl.Remove(productToDelete);
+                _db.SaveChanges();
+            }
+            //ProductRepository.DeleteProduct(productId);
             return RedirectToAction(nameof(Index));
         } 
         

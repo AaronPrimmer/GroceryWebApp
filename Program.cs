@@ -1,14 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using WebApp.Data;
-using WebApp.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
-builder.Services.Configure<MySettings>(
-    builder.Configuration.GetSection("MySettings"));
 
 builder.Services.AddDbContext<AppDbContext>(options => {
     var connString = builder.Configuration.GetSection("MySettings:ConnectionString").Value;
