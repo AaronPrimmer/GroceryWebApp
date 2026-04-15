@@ -1,4 +1,5 @@
 ﻿using System.Net.NetworkInformation;
+using WebApp.Settings;
 
 namespace WebApp.Models
 {

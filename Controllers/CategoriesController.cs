@@ -1,13 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using WebApp.Data;
 using WebApp.Models;
+using WebApp.Settings;
 
 namespace WebApp.Controllers
 {
     public class CategoriesController : Controller
     {
-        public IActionResult Index()
+        private readonly AppDbContext _db;
+
+        public CategoriesController(AppDbContext db)
         {
-            var categories = CategoriesRepository.GetAllCategories();
+            _db = db;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var categories = await _db.SupermarketCategoriesTbl.ToListAsync();
             return View(categories);
         }
 
@@ -38,12 +49,13 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Add(Category category)
+        public async Task<IActionResult> Add(Category category)
         {
             
             if (ModelState.IsValid) 
             {
-                CategoriesRepository.AddCategory(category);
+                _db.SupermarketCategoriesTbl.Add(category);
+                await _db.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
